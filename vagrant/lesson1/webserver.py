@@ -3,8 +3,11 @@ from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import cgi
+from urllib import urlencode
+from urlparse import urlparse
+import bleach
 
-engine = create_engine('sqlite:///restaurantmenu.db')
+engine = create_engine('sqlite:///restaurantmenu.db',echo=True)
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
@@ -12,8 +15,10 @@ session = DBSession()
 class webServerHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
-            # search for url requests which end in /hello
-            if self.path.endswith("/hello"):
+            parsedURL = urlparse(self.path)
+
+            if parsedURL.path.endswith("/hello"):
+                # search for url requests which end in /hello
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
@@ -26,7 +31,7 @@ class webServerHandler(BaseHTTPRequestHandler):
                 print output  # for debugging
                 return
 
-            if self.path.endswith("/restaurants"):
+            if parsedURL.path.endswith("/restaurants"):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
@@ -39,7 +44,9 @@ class webServerHandler(BaseHTTPRequestHandler):
 
                 if restaurants:
                     for restaurant in restaurants:
-                        output += "<p>%s<br><a href='#'>Edit</a><br><a href='#'>Delete</a></p>" % restaurant.name
+                        output += "<p>%s<br>" % restaurant.name
+                        output += "<a href='/edit?%s'>Edit</a><br>" % restaurant.id
+                        output += "<form method='POST' enctype='multipart/form-data' action='/delete'><input type='submit' value='Delete'><input name='id' type='hidden' value='%s'></form>" % restaurant.id
 
                 output += "<a href='/new'>Make a New Restaurant Here</a>"
                 output += "</body></html>"
@@ -49,7 +56,7 @@ class webServerHandler(BaseHTTPRequestHandler):
                 return
 
 
-            if self.path.endswith("/new"):
+            if parsedURL.path.endswith("/new"):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
@@ -64,8 +71,25 @@ class webServerHandler(BaseHTTPRequestHandler):
                 return
 
 
-            # search for url requests which end in /hola
-            if self.path.endswith("/hola"):
+            if parsedURL.path.endswith("/edit"):
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+
+                restaurant_update = session.query(Restaurant).filter_by(id=parsedURL.query).one()
+
+                output = ""
+                output += "<html><body>"
+                output += "<h1>Update %s Name</h1>" % restaurant_update.name
+                output += "<form method='POST' enctype='multipart/form-data' action='/edit'><input name='updateRestaurauntName' type='text' value='%s'><input type='submit' value='Update'><input name='id' type='hidden' value='%s'></form>" % (restaurant_update.name, parsedURL.query)
+                output += "</body></html>"
+                self.wfile.write(output)
+
+                return
+
+
+            if parsedURL.path.endswith("/hola"):
+                # search for url requests which end in /hola
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
@@ -103,12 +127,15 @@ class webServerHandler(BaseHTTPRequestHandler):
 
                 if restaurants:
                     for restaurant in restaurants:
-                        output += "<p>%s<br><a href='#'>Edit</a><br><a href='#'>Delete</a></p>" % restaurant.name
+                        output += "<p>%s<br>" % restaurant.name
+                        output += "<a href='/edit?%s'>Edit</a><br>" % restaurant.id
+                        output += "<form method='POST' enctype='multipart/form-data' action='/delete'><input type='submit' value='Delete'><input name='id' type='hidden' value='%s'></form>" % restaurant.id
 
                 output += "<a href='/new'>Make a New Restaurant Here</a>"
                 output += "</body></html>"
                 self.wfile.write(output)
                 print output
+
 
             if self.path.endswith("/edit"):
                 self.send_response(301)
@@ -117,15 +144,61 @@ class webServerHandler(BaseHTTPRequestHandler):
                 ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
                 if ctype == 'multipart/form-data':
                     fields = cgi.parse_multipart(self.rfile, pdict)
-                    name = fields.get('restarauntName')
+                    name = fields.get('updateRestaurauntName')
+                    rest_id = fields.get('id')
 
+                old_restaurant = session.query(Restaurant).filter_by(id=rest_id[0]).one()
+                old_restaurant.name = bleach.clean(name[0])
+                session.add(old_restaurant)
+                session.commit()
+
+                restaurants = session.query(Restaurant).\
+                order_by(Restaurant.name)
                 output = ""
-                output += "<html><body>"
-                output += "<h2> OLD, how about this: </h2>"
-                output += "<h1> %s </h1>" % name[0]
+                output += "<html><body><h2>Updated %s in List</h2>" % name[0]
+
+                if restaurants:
+                    for restaurant in restaurants:
+                        output += "<p>%s<br>" % restaurant.name
+                        output += "<a href='/edit?%s'>Edit</a><br>" % restaurant.id
+                        output += "<form method='POST' enctype='multipart/form-data' action='/delete'><input type='submit' value='Delete'><input name='id' type='hidden' value='%s'></form>" % restaurant.id
+
+                output += "<a href='/new'>Make a New Restaurant Here</a>"
                 output += "</body></html>"
                 self.wfile.write(output)
                 print output
+
+
+            if self.path.endswith("/delete"):
+                self.send_response(301)
+                self.end_headers()
+
+                ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
+                if ctype == 'multipart/form-data':
+                    fields = cgi.parse_multipart(self.rfile, pdict)
+                    rest_id = fields.get('id')
+
+                old_restaurant = session.query(Restaurant).filter_by(id=rest_id[0]).one()
+                name = old_restaurant.name
+                session.delete(old_restaurant)
+                session.commit()
+
+                restaurants = session.query(Restaurant).\
+                order_by(Restaurant.name)
+                output = ""
+                output += "<html><body><h2>Deleted %s from List</h2>" % name
+
+                if restaurants:
+                    for restaurant in restaurants:
+                        output += "<p>%s<br>" % restaurant.name
+                        output += "<a href='/edit?%s'>Edit</a><br>" % restaurant.id
+                        output += "<form method='POST' enctype='multipart/form-data' action='/delete'><input type='submit' value='Delete'><input name='id' type='hidden' value='%s'></form>" % restaurant.id
+
+                output += "<a href='/new'>Make a New Restaurant Here</a>"
+                output += "</body></html>"
+                self.wfile.write(output)
+                print output
+
 
         except:
             pass
