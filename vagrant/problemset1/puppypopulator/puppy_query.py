@@ -26,5 +26,6 @@ for puppy in puppies.order_by(Puppy.weight.desc()):
     print puppy.name, puppy.weight
 
 # Query all puppies grouped by the shelter in which they are staying.
-for puppy in puppies.group_by(Puppy.shelter_id):
-    print puppy.shelter_id, puppy.name
+for puppy in puppies.order_by(Puppy.shelter_id):
+    print puppy.shelter.name, puppy.name
+# Wow.. no join.. its all in the python code... powerful.
