@@ -1,6 +1,6 @@
 import sys
 
-from sqlalchemy import Column, ForeignKey, Integer, String, create_engine
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, create_engine, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -14,12 +14,12 @@ class Item(Base):
     name = Column(String(80), nullable=False)
     description = Column(String, nullable=False)
     author_id = Column(String, ForeignKey('user.id'))
-    #dateCreated = Column(DateTime) # TODO Make this datetime, automatic
-    #lastModified = Column(DateTime) # TODO Make this datetime
-    hearts = Column(String)
+    dateCreated = Column(DateTime, nullable=False, default=func.now())
+    lastModified = Column(DateTime, nullable=False, default=func.now())
+    hearts = Column(String) # Ultimately this will be a picture? from another DB?
     sell_price = Column(Integer)
     buy_price = Column(Integer)
-    picture = Column(String)
+    picture = Column(String) # will be picture, from another DB?
 
 
 class Category(Base):
@@ -27,14 +27,15 @@ class Category(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
+    author = Column(String)
 
 
 class ItemCategory(Base):
     __tablename__ = 'itemCategory'
-
-    item_id = Column(Integer, ForeignKey('item.id'))
+    # I need to identify a primary key, this is a requirement in SQLAlchemy?
+    item_id = Column(Integer, ForeignKey('item.id'), primary_key=True)
     item = relationship(Item)
-    category_id = Column(Integer, ForeignKey('category.id'))
+    category_id = Column(Integer, ForeignKey('category.id'), primary_key=True)
     category = relationship(Category)
 
 
@@ -48,4 +49,4 @@ class User(Base):
     picture = Column(String(250))
 
 engine = create_engine('sqlite:///itemcatalog.db')
-Base.metadate.create_all(engine)
+Base.metadata.create_all(engine)

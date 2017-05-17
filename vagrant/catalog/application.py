@@ -11,7 +11,7 @@ from database_setup import Base, Item, Category, ItemCategory, User
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 
 engine = create_engine('sqlite:///itemcatalog.db', echo=True)
-Base.metadate.bind = engine
+Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
@@ -41,7 +41,7 @@ def getUserInfo(user_id):
 def createUser(login_session):
     newUser = User(name=login_session['username'],
                    email=login_session['email'],
-                   picture=login_Session['picture'])
+                   picture=login_session['picture'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
