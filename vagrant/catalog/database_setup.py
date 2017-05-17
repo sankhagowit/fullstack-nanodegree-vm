@@ -42,7 +42,10 @@ class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
-    email = Column(String, nullable=False)
+    name = Column(String(250), nullable=False)
+    # How do I know that 250 is enough? Too much? figure this out eventually
+    email = Column(String(250), nullable=False)
+    picture = Column(String(250))
 
 engine = create_engine('sqlite:///itemcatalog.db')
 Base.metadate.create_all(engine)
