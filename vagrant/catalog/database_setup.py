@@ -21,6 +21,19 @@ class Item(Base):
     buy_price = Column(Integer)
     picture = Column(String) # will be picture, from another DB?
 
+    @property
+    def serialize(self):
+        """Return object data in easily serializable format"""
+        return {
+            'id' : self.id,
+            'item_name' : self.name,
+            'author' : self.author, # is this last comma needed?
+            'description' : self.description,
+            'hearts' : self.hearts,
+            'sell_price' : self.sell_price,
+            'buy_price' : self.buy_price,
+            'picture' : self.picture,
+        }
 
 class Category(Base):
     __tablename__ = 'category'
@@ -28,6 +41,15 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     author = Column(String)
+
+    @property
+    def serialize(self):
+        """Return object data in easily serializable format"""
+        return {
+            'id' : self.id,
+            'category_name' : self.name,
+            'author' : self.author, # is this last comma needed?
+        }
 
 
 class ItemCategory(Base):
@@ -47,6 +69,7 @@ class User(Base):
     # How do I know that 250 is enough? Too much? figure this out eventually
     email = Column(String(250), nullable=False)
     picture = Column(String(250))
+
 
 engine = create_engine('sqlite:///itemcatalog.db')
 Base.metadata.create_all(engine)

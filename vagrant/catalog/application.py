@@ -45,6 +45,7 @@ def createUser(login_session):
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
+    print "New user %s created!" % login_session['email']
     return user.id
 
 # Webhandler for Item Catalog homepage
@@ -166,7 +167,6 @@ def gdisconnect():
     else:
         # given response token invalid for whatever reason / something went wrong
         return returnResponse("Failed to revoke token for given user", 400, "application/json")
-
 
 
 @app.route('/catalog/<string:category>/items/')
