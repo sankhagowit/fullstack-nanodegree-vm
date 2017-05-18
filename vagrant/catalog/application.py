@@ -18,8 +18,9 @@ session = DBSession()
 
 # response method
 def returnResponse(response, code, contentType):
-    """Returns HTTP response where response is string, code is int, and
-    contentType is a string"""
+    """Returns HTTP response where response is th e response message as a
+    string, code is int, and contentType is the header Content-Type as
+    a string"""
     response = make_response(json.dumps(response), code)
     response.headers['Content-Type'] = contentType
     return response
