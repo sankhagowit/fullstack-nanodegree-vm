@@ -1,15 +1,11 @@
 {% extends "base.html" %}
 
+
 {% block content %}
-    {% for i in items %}
-        <div class = "post">
-            <h4><a href="#">{{i.name}}</a></h4>
-            <hr>
-            <p></p>
-            <br>
-            <em class="author">{{i.author}}</em>
-            <i class="date"></i>
-        </div>
-        <br><br>
-    {% endfor %}
+    <h3>{{item.name}}</h3>
+    <p>{{item.description}}</p>
+    {% if user.email == item.author %}
+        <a href="{{url_for('editItem', category=item.category_name, item=item.name)}}">Edit Item  </a>
+        <a href="{{url_for('deleteItem', category=item.category_name, item=item.name)}}">  Delete Item</a>
+    {% endif %}
 {% endblock %}

@@ -3,8 +3,7 @@ from flask import session as login_session
 app = Flask(__name__)
 
 import random, string, httplib2, json, requests
-
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Item, Category, User
 
@@ -53,8 +52,8 @@ def createUser(login_session):
 def showHomePage():
     # Check if user is logged in or not
     title = "Latest Items"
-    categories = session.query(Category).all()
-    items = session.query(Item).all()
+    categories = session.query(Category).order_by(Category.name).all()
+    items = session.query(Item).order_by(desc(Item.id)).all()
     if 'username' not in login_session:
         return render_template('latest.html', title=title, items=items,
                                categories=categories)
@@ -185,42 +184,62 @@ def showCatalog(category):
     items = session.query(Item).filter_by(category_name=category).all()
     if 'username' not in login_session:
         # Need own HTML template which will have the add button for the items
-        return render_template('singleCatalog.html', title=title, items=items,
-                               categories=categories, category=category)
+        return render_template('singleCatalog.html', title=title, items=items, categories=categories, category=category)
     else:
         user = getUserInfo(getUserID(login_session['email']))
-        return render_template('singleCatalog.html', title=title, items=items,
-                               user=user, categories=categories,
-                               category=category)
+        return render_template('singleCatalog.html', title=title, items=items, user=user, categories=categories, category=category)
 
 
 @app.route('/catalog/<string:category>/<string:item>/')
 def showItem(category, item):
     title = "%s Item Catalog" % category
     categories = session.query(Category).all()
-    item = session.query(Item).filter_by(name=item).one
+    item = session.query(Item).filter_by(name=item).one()
     if 'username' not in login_session:
-        return render_template('item.html', title=title, items=items,
+        return render_template('item.html', title=title, item=item,
                                categories=categories)
     else:
         user = getUserInfo(getUserID(login_session['email']))
-        return render_template('item.html', title=title, items=items,
+        return render_template('item.html', title=title, item=item,
                                user=user, categories=categories)
 
 
-@app.route('/catalog/<string:category>/addItem/')
+@app.route('/catalog/<string:category>/addItem/', methods=["GET", "POST"])
 def addItem(category):
-    return "Add new item to category %s" % category
+    if 'username' not in login_session:
+        # must be logged in for this operation
+        return redirect('/login')
 
 
-@app.route('/catalog/<string:category>/<string:item>/editItem/')
+
+@app.route('/catalog/<string:category>/<string:item>/editItem/', methods=["GET", "POST"])
 def editItem(category, item):
     return "Edit details for item %s in category %s" % (item, category)
 
 
-@app.route('/catalog/<string:category>/<string:item>/deleteItem/')
+@app.route('/catalog/<string:category>/<string:item>/deleteItem/', methods=["GET", "POST"])
 def deleteItem(category, item):
-    return "Delete item %s from category %s" % (item, category)
+    if 'username' not in login_session:
+        flash('Must be logged in to complete that operation')
+        return redirect('/login')
+    if item.author != login_session['email']:
+        flash('Cannot delete an item you did not create')
+        return redirect('showItem', category=category, item=item)
+    # Check if it is a get or a post method,
+    if request.method == "POST":
+        # if post delete the entry
+        item = session.query(Item).filter_by(name=item).one()
+        session.delete(item)
+        session.commit()
+        flash('Item %s successfully deleted' % item)
+        return redirect(url_for('showCatalog', category=category))
+    else:
+        # if get, display the page
+        title = "Delete Item %s" % item
+        categories = session.query(Category).all()
+        item = session.query(Item).filter_by(name=item).one()
+        user = getUserInfo(getUserID(login_session['email']))
+        return render_template('deleteItem.html', title=title, item=item, user=user, categories=categories)
 
 
 @app.route('/catalog/<string:category>/json/')
