@@ -25,7 +25,6 @@ def returnResponse(response, code, contentType):
     response.headers['Content-Type'] = contentType
     return response
 
-
 def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
@@ -33,11 +32,9 @@ def getUserID(email):
     except:
         return None
 
-
 def getUserInfo(user_id):
     user = session.query(User).filter_by(id=user_id).one()
     return user
-
 
 def createUser(login_session):
     newUser = User(name=login_session['username'],
@@ -48,6 +45,7 @@ def createUser(login_session):
     user = session.query(User).filter_by(email=login_session['email']).one()
     print "New user %s created!" % login_session['email']
     return user.id
+
 
 # Webhandler for Item Catalog homepage
 @app.route('/')

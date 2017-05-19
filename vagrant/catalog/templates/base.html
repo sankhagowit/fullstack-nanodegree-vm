@@ -36,7 +36,7 @@
                 <h3>Categories</h3>
                 <ul>
                 {% for c in categories %}
-                    <li><a href="#">{{c.name}}</a></li>
+                    <li><a href="url_for('showCatalog, category=c.name')">{{c.name}}</a></li>
                 {% endfor %}
                 </ul>
             </aside>
