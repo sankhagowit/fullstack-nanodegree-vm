@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3>{{title}}</h3>
-<ul>
+    <h3>{{title}}</h3>
+    {% if user %}
+        <a href="{{url_for('addItem', category=category)}}">Add Item</a>
+    {% endif %}
+    <ul>
     {% for i in items %}
         <li><a href="#">{{i.name}}</a> (<span class="catSpan">{{i.category_name}}</span>)</li>
     {% endfor %}
-</ul>
+    </ul>
 
 {% endblock %}

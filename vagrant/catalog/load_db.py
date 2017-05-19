@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Item, Category, ItemCategory, User
+from database_setup import Base, Item, Category, User
 from application import getUserID, getUserInfo, createUser
 
 engine = create_engine('sqlite:///itemcatalog.db')
@@ -24,10 +24,22 @@ food = Category(name="Food", author=me.email)
 session.add(food)
 session.commit()
 
-# critters = Category(name="Critters", author=me.email)
-# monster = Category(name="Monster Parts", author=me.email)
-# guardian = Category(name="Guardian Parts", author=me.email)
-
 ore = Category(name="Ore", author=me.email)
 session.add(ore)
+session.commit()
+
+apple = Item(name="Apple", description="Delicious Fruit, one a day keeps the doctor away", category_name="Food", author=me.email)
+session.add(apple)
+session.commit()
+
+orange = Item(name="Orange", description="From Florida or California, incredible", category_name="Food", author=me.email)
+session.add(orange)
+session.commit()
+
+diamond = Item(name="Diamond", description="Shiney rock, coveted by humans, oddly expensive for its actual supply", category_name="Ore", author=me.email)
+session.add(diamond)
+session.commit()
+
+flint = Item(name="Flint", description="Shiney rock, makes sparks and arrowheads", category_name="Ore", author=me.email)
+session.add(flint)
 session.commit()

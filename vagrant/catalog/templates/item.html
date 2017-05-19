@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% for i in items %}
+        <div class = "post">
+            <h4><a href="#">{{i.name}}</a></h4>
+            <hr>
+            <p></p>
+            <br>
+            <em class="author">{{i.author}}</em>
+            <i class="date"></i>
+        </div>
+        <br><br>
+    {% endfor %}
+{% endblock %}

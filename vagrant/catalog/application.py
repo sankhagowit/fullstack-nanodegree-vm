@@ -6,7 +6,7 @@ import random, string, httplib2, json, requests
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Item, Category, ItemCategory, User
+from database_setup import Base, Item, Category, User
 
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 
@@ -180,12 +180,32 @@ def gdisconnect():
 
 @app.route('/catalog/<string:category>/items/')
 def showCatalog(category):
-    return "Show item list for specific category %s" % category
+    title = "%s Item Catalog" % category
+    categories = session.query(Category).all()
+    items = session.query(Item).filter_by(category_name=category).all()
+    if 'username' not in login_session:
+        # Need own HTML template which will have the add button for the items
+        return render_template('singleCatalog.html', title=title, items=items,
+                               categories=categories, category=category)
+    else:
+        user = getUserInfo(getUserID(login_session['email']))
+        return render_template('singleCatalog.html', title=title, items=items,
+                               user=user, categories=categories,
+                               category=category)
 
 
 @app.route('/catalog/<string:category>/<string:item>/')
 def showItem(category, item):
-    return "Show details for item %s in category %s" % (item, category)
+    title = "%s Item Catalog" % category
+    categories = session.query(Category).all()
+    item = session.query(Item).filter_by(name=item).one
+    if 'username' not in login_session:
+        return render_template('item.html', title=title, items=items,
+                               categories=categories)
+    else:
+        user = getUserInfo(getUserID(login_session['email']))
+        return render_template('item.html', title=title, items=items,
+                               user=user, categories=categories)
 
 
 @app.route('/catalog/<string:category>/addItem/')

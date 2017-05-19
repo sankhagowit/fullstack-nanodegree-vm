@@ -15,7 +15,16 @@
             <h1 class="text-center">{{title}}</h1>
         </header>
         <div class="row">
-            <main class="col-sm-9 text-center">
+            <aside class="col-sm-3 text-center">
+                <!--display list of categories posts-->
+                <h3>Categories</h3>
+                <ul>
+                {% for c in categories %}
+                    <li><a href="{{url_for('showCatalog', category=c.name)}}">{{c.name}}</a></li>
+                {% endfor %}
+                </ul>
+            </aside>
+            <main class="col-sm-6 text-center">
                 {% block content %}
                 {% endblock %}
             </main>
@@ -32,13 +41,6 @@
                     <h3><a href="{{url_for('showLogin')}}">Click here to Login!</a></h3>
                 {% endif %}
                 <h3><a href="{{url_for('showHomePage')}}">Home</a></h3>
-                <!--display list of categories posts-->
-                <h3>Categories</h3>
-                <ul>
-                {% for c in categories %}
-                    <li><a href="url_for('showCatalog, category=c.name')">{{c.name}}</a></li>
-                {% endfor %}
-                </ul>
             </aside>
         </div>
     </div>
