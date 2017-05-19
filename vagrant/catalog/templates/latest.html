@@ -1,21 +1,14 @@
-{% extends "baseOut.html" %}
+{% extends "base.html" %}
 
 {% block content %}
-    {% for p in posts %}
+    {% for i in items %}
         <div class = "post">
-            <h4><a href="/{{p.key().id()}}">{{p.subject}}</a></h4>
+            <h4><a href="#">{{i.name}}</a></h4>
             <hr>
-            <p>{{p.content}}</p>
+            <p></p>
             <br>
-            <em class="author">{{p.author}}</em>
-            <i class="date">{{p.last_modified}}</i>
-            {% if p.comments > 0 %}
-            <em><a href="/{{p.key().id()}}">Comments:</a> {{p.comments}}</em>
-            {% endif %}
-
-            {% if p.likesLength() > 0 %}
-                <em>Likes: {{p.likesLength()}}</em>
-            {% endif %}
+            <em class="author">{{i.author}}</em>
+            <i class="date"></i>
         </div>
         <br><br>
     {% endfor %}

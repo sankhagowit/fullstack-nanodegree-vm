@@ -24,9 +24,9 @@ food = Category(name="Food", author=me.email)
 session.add(food)
 session.commit()
 
-critters = Category(name="Critters", author=me.email)
-monster = Category(name="Monster Parts", author=me.email)
-guardian = Category(name="Guardian Parts", author=me.email)
+# critters = Category(name="Critters", author=me.email)
+# monster = Category(name="Monster Parts", author=me.email)
+# guardian = Category(name="Guardian Parts", author=me.email)
 
 ore = Category(name="Ore", author=me.email)
 session.add(ore)

@@ -53,7 +53,17 @@ def createUser(login_session):
 @app.route('/')
 @app.route('/catalog/')
 def showHomePage():
-    return "Show main homepage, Categories and a list of recently added items"
+    # Check if user is logged in or not
+    title = "Latest Items"
+    categories = session.query(Category).all()
+    items = session.query(Item).all()
+    if 'username' not in login_session:
+        return render_template('latest.html', title=title, items=items,
+                               categories=categories)
+    else:
+        user = getUserInfo(getUserID(login_session['email']))
+        return render_template('latest.html', title=title, items=items,
+                               user=user, categories=categories)
 
 
 @app.route('/login/')
