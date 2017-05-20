@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+	<form action="{{url_for('addItem', category=category)}}" method = "post">
+		<div class="form-group">
+                <h3>Add New Item</h3>
+            <label for="name">Name:</label>
+			<input type ="text" maxlength="70" class="form-control" name="name" placeholder="Name of the item">
+
+			<label for="description">Description:</label>
+			<textarea class="form-control" maxlength="250" rows="3" name="description" placeholder="Enter description of the item here"></textarea>
+
+			<label for="category">Choose An Item Category:</label>
+            {% for c in categories %}
+            <div class="radio">
+                 <label>
+                {% if c.name == category %}
+                <input type="radio" name="category" id="{{c.name}}" value="{{c.name}}" checked="checked">{{c.name}}
+                {% else %}
+			    <input type="radio" name="category" id="{{c.name}}" value="{{c.name}}">{{c.name}}
+                {% endif %}
+                </label>
+            </div>
+            {% endfor %}
+			<button type="submit" class="btn btn-default" id="submit" type="submit">Add</button>
+		</div>
+	</form>
+    <a href="{{url_for('showCatalog', category=category)}}">Cancel</a>
+{% endblock %}

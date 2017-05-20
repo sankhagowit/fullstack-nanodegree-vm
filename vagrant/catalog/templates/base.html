@@ -41,17 +41,14 @@
             </main>
             <aside class="col-sm-3">
                 <!--display welcome message if user is signed in -->
+                <h3><a href="{{url_for('showHomePage')}}">Home</a></h3>
                 {% if user %}
-                <h3>Welcome {{user.name}}</h3>
-                <h4 class="error">{{message}}</h4>
-
-                <h3><a href="{{url_for('gdisconnect')}}">Click here to Logout</a></h3>
+                <h4><a href="{{url_for('gdisconnect')}}">Click here to Logout</a></h4>
                 {% else %}
                 <!--display login form if user is not logged in-->
                 <!-- Just make this a button to login -->
                     <h3><a href="{{url_for('showLogin')}}">Click here to Login!</a></h3>
                 {% endif %}
-                <h3><a href="{{url_for('showHomePage')}}">Home</a></h3>
             </aside>
         </div>
     </div>

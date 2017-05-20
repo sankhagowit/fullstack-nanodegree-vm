@@ -171,7 +171,8 @@ def gdisconnect():
         del login_session['username']
         del login_session['email']
         del login_session['picture']
-        return returnResponse("Successfully disconnected", 200, "application/json")
+        flash('Successfully disconnected')
+        return redirect(url_for('showHomePage'))
     else:
         # given response token invalid for whatever reason / something went wrong
         return returnResponse("Failed to revoke token for given user", 400, "application/json")
@@ -207,37 +208,76 @@ def showItem(category, item):
 @app.route('/catalog/<string:category>/addItem/', methods=["GET", "POST"])
 def addItem(category):
     if 'username' not in login_session:
-        # must be logged in for this operation
-        return redirect('/login')
+        flash('Must be logged in to add an item')
+        return redirect(url_for('showCatalog', category=category))
+
+    if request.method == "POST":
+        if request.form['name']:
+            if request.form['description']:
+                if request.form['category']:
+                    newItem = Item(name=request.form['name'],
+                                   description=request.form['description'],
+                                   category_name=request.form['category'],
+                                   author=login_session['email'])
+                    session.add(newItem)
+                    session.commit()
+                    flash('%s item created!' % newItem.name)
+                    return redirect(url_for('showItem', category=newItem.category_name, item=newItem.name))
+    else:
+        title = "Add New Item"
+        categories = session.query(Category).all()
+        user = getUserInfo(getUserID(login_session['email']))
+        return render_template('addItem.html', title=title, user=user, categories=categories, category=category)
 
 
 
 @app.route('/catalog/<string:category>/<string:item>/editItem/', methods=["GET", "POST"])
 def editItem(category, item):
-    return "Edit details for item %s in category %s" % (item, category)
+    if 'username' not in login_session:
+        flash('Must be logged in to edit an item')
+        return redirect(url_for('showCatalog', category=category))
+    item = session.query(Item).filter_by(name=item).one()
+    if item.author != login_session['email']:
+        flash('Cannot edit an item you did not create')
+        return redirect(url_for('showItem', category=category, item=item.name))
+    # Check if it is a get or a post method,
+    if request.method == "POST":
+        if request.form['description'] != item.description:
+            item.description = request.form['description']
+        if request.form['category'] != item.category_name:
+            item.category_name = request.form['category']
+        session.add(item)
+        session.commit()
+        flash('%s item updated!' % item.name)
+        return redirect(url_for('showItem', category=item.category_name, item=item.name))
+    else:
+        title = "Edit Item %s" % item.name
+        categories = session.query(Category).all()
+        user = getUserInfo(getUserID(login_session['email']))
+        return render_template('editItem.html', title=title, item=item, user=user, categories=categories)
+
 
 
 @app.route('/catalog/<string:category>/<string:item>/deleteItem/', methods=["GET", "POST"])
 def deleteItem(category, item):
     if 'username' not in login_session:
-        flash('Must be logged in to complete that operation')
-        return redirect('/login')
+        flash('Must be logged in to delete an item')
+        return redirect(url_for('showCatalog', category=category))
+    item = session.query(Item).filter_by(name=item).one()
     if item.author != login_session['email']:
         flash('Cannot delete an item you did not create')
-        return redirect('showItem', category=category, item=item)
+        return redirect(url_for('showItem', category=category, item=item.name))
     # Check if it is a get or a post method,
     if request.method == "POST":
         # if post delete the entry
-        item = session.query(Item).filter_by(name=item).one()
         session.delete(item)
         session.commit()
-        flash('Item %s successfully deleted' % item)
+        flash('Item %s successfully deleted' % item.name)
         return redirect(url_for('showCatalog', category=category))
     else:
         # if get, display the page
-        title = "Delete Item %s" % item
+        title = "Delete Item %s" % item.name
         categories = session.query(Category).all()
-        item = session.query(Item).filter_by(name=item).one()
         user = getUserInfo(getUserID(login_session['email']))
         return render_template('deleteItem.html', title=title, item=item, user=user, categories=categories)
 

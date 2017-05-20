@@ -36,7 +36,6 @@ class Item(Base):
     author = Column(String, ForeignKey('user.email'))
     dateCreated = Column(DateTime, nullable=False, default=func.now())
     lastModified = Column(DateTime, nullable=False, default=func.now())
-    picture = Column(String)
 
 
     @property
@@ -48,7 +47,6 @@ class Item(Base):
             'author' : self.author, # is this last comma needed?
             'description' : self.description,
             'category' : self.category_name,
-            'picture' : self.picture,
         }
 
 

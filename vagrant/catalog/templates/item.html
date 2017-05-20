@@ -4,8 +4,10 @@
 {% block content %}
     <h3>{{item.name}}</h3>
     <p>{{item.description}}</p>
-    {% if user.email == item.author %}
-        <a href="{{url_for('editItem', category=item.category_name, item=item.name)}}">Edit Item  </a>
-        <a href="{{url_for('deleteItem', category=item.category_name, item=item.name)}}">  Delete Item</a>
+    {% if user %}
+        {% if user.email == item.author %}
+            <a href="{{url_for('editItem', category=item.category_name, item=item.name)}}">Edit Item  </a>
+            <a href="{{url_for('deleteItem', category=item.category_name, item=item.name)}}">  Delete Item</a>
+        {% endif %}
     {% endif %}
 {% endblock %}
