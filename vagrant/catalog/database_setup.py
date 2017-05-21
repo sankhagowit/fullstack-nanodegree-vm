@@ -35,7 +35,6 @@ class Item(Base):
     category = relationship(Category)
     author = Column(String, ForeignKey('user.email'))
     dateCreated = Column(DateTime, nullable=False, default=func.now())
-    lastModified = Column(DateTime, nullable=False, default=func.now())
 
 
     @property

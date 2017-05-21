@@ -215,19 +215,26 @@ def addItem(category):
         if request.form['name']:
             if request.form['description']:
                 if request.form['category']:
-                    newItem = Item(name=request.form['name'],
-                                   description=request.form['description'],
-                                   category_name=request.form['category'],
-                                   author=login_session['email'])
-                    session.add(newItem)
-                    session.commit()
-                    flash('%s item created!' % newItem.name)
-                    return redirect(url_for('showItem', category=newItem.category_name, item=newItem.name))
+                    if not session.query(Item).filter_by(name=request.form['name']).first():
+                        newItem = Item(name=request.form['name'],
+                                       description=request.form['description'],
+                                       category_name=request.form['category'],
+                                       author=login_session['email'])
+                        session.add(newItem)
+                        session.commit()
+                        flash('%s item created!' % newItem.name)
+                        return redirect(url_for('showItem', category=newItem.category_name, item=newItem.name))
+                    else:
+                        flash('Item %s already exists! Cannot create another' % request.form['name'])
+                        return redirect(url_for('addItem', category=category))
     else:
         title = "Add New Item"
         categories = session.query(Category).all()
         user = getUserInfo(getUserID(login_session['email']))
         return render_template('addItem.html', title=title, user=user, categories=categories, category=category)
+
+    flash('To create new item all fields must be completed (name, description, category')
+    return redirect(url_for('addItem', category=category))
 
 
 
@@ -284,12 +291,22 @@ def deleteItem(category, item):
 
 @app.route('/catalog/<string:category>/json/')
 def catalogJSON(category):
-    return "Display JSON data for category %s" % category
+    if 'username' not in login_session:
+        flash('must be logged in to do that')
+        return redirect('/')
+    catalog = session.query(Category).filter_by(name=category).one()
+    items = session.query(Item).filter_by(category_name=category).all()
+    return jsonify(catalog = [catalog.serialize], items = [i.serialize for i in items])
 
 
 @app.route('/catalog/<string:category>/<string:item>/json/')
 def itemJSON(category, item):
-    return "Display JSON data for item %s in category %s" % (item, category)
+    if 'username' not in login_session:
+        flash('must be logged in to do that')
+        return redirect('/')
+    item = session.query(Category).filter_by(name=item).one()
+    return jsonify(item = [item.serialize])
+
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
