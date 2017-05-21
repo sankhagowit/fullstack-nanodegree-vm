@@ -304,8 +304,8 @@ def itemJSON(category, item):
     if 'username' not in login_session:
         flash('must be logged in to do that')
         return redirect('/')
-    item = session.query(Category).filter_by(name=item).one()
-    return jsonify(item = [item.serialize])
+    items = session.query(Item).filter_by(name=item).first()
+    return jsonify(item = [items.serialize])
 
 
 if __name__ == '__main__':
