@@ -9,7 +9,7 @@ from database_setup import Base, Item, Category, User
 
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 
-engine = create_engine('sqlite:///itemcatalog.db', echo=True)
+engine = create_engine('postgresql:///itemcatalog', echo=True)
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
@@ -62,6 +62,15 @@ def showHomePage():
         return render_template('latest.html', title=title, items=items,
                                user=user, categories=categories)
 
+@app.route('/refresh/')
+def refresh():
+    del login_session['access_token']
+    del login_session['gplus_id']
+    del login_session['username']
+    del login_session['email']
+    del login_session['picture']
+    flash('Login Session refreshed')
+    return redirect(url_for('showHomePage'))
 
 @app.route('/login/')
 def showLogin():

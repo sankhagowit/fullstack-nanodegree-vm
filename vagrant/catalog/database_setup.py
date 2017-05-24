@@ -11,7 +11,7 @@ class Category(Base):
     __tablename__ = 'category'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     author = Column(String)
 
     @property
@@ -29,7 +29,7 @@ class Item(Base):
 
     id = Column(Integer, primary_key=True)
     # Names will actually be unique as we are using them in the routing
-    name = Column(String(80), nullable=False)
+    name = Column(String(80), nullable=False, unique=True)
     description = Column(String, nullable=False)
     category_name = Column(String, ForeignKey('category.name'))
     category = relationship(Category)
@@ -55,9 +55,9 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False)
     # How do I know that 250 is enough? Too much? figure this out eventually
-    email = Column(String(250), nullable=False)
+    email = Column(String(250), nullable=False, unique=True)
     picture = Column(String(250))
 
 
-engine = create_engine('sqlite:///itemcatalog.db')
+engine = create_engine('postgresql:///itemcatalog')
 Base.metadata.create_all(engine)
